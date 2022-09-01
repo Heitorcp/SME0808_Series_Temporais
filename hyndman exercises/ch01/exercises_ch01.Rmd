@@ -1,0 +1,43 @@
+---
+title: "exercises_ch01"
+author: "Heitor"
+date: "2022-09-01"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Times series Forecasting - Hyndman 
+
+### Exercises
+
+1. For cases 3 and 4 in Section 1.5, list the possible predictor variables that might be useful, assuming that the relevant data are available.
+
+Some predictor variables for the resale price of the cars (Case 3) might be:
+
+* Year of the car
+* Brand of the car
+* MPG (Miles per Gallon) of the car
+* Horsepower
+* The car has been damaged before?
+* Does it have sunroof?
+
+For case 4, it could be:
+
+* Destination
+* Time of arrival
+* Time of departure
+* Day of the week
+* Days to the next holiday
+* Ticket price
+
+2. For case 3 in Section 1.5, describe the five steps of forecasting in the context of this project.
+
+    1. The problem: Forecast Vehicle resale prices
+    2. Gathering the information provided by the company.
+    3. Do some exploratory data analysis to unfold any patterns and trends that might be underlying in the data
+    4. Next, we have to select among different models, which one is the better to be used, and test various ones.
+    5. We have to evaluate the chosen model, to conclude if we're correctly predicting the resale prices of the cars.
+

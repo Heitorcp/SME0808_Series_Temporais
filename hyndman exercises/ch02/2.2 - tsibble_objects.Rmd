@@ -1,0 +1,147 @@
+---
+title: "theory_ch02"
+author: "Heitor"
+date: "2022-09-01"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE)
+library(fpp3)
+library(tidyverse)
+library(tsibble)
+```
+
+## 2.1 `tsibble` objects
+
+A time series is a list of numbers (measurements), along with the information about what time those numbers were recorded (the index)
+
+### The index variable
+
+```{r}
+y <- tsibble(
+  Year = 2015:2019,
+  Observation = c(123, 39, 78, 52, 110),
+  index = Year
+)
+
+y
+```
+
+Modyfing a tibble
+
+```{r}
+z <- tibble(
+  Month = c("2019 Jan", "2019 Feb", "2019 Mar", "2019 Apr", "2019 May"),
+  Observation = c(50,23,34,30,25)
+
+)
+
+z
+```
+**Converting a tibble to a tsibble**
+
+```{r}
+z %>% 
+  mutate(Month = yearmonth(Month)) %>%
+  as_tsibble(index = Month)
+```
+
+The `1M` indicates that this is monthly data. So the observations happen monthly. If it were `4Y`, for instance, then it'd mean that it happens every 4 years.
+
+Other time class functions for observations frequency
+
+```{r}
+time_func <- tibble(
+  Frequency = c("Annual", "Quaterly", "Monhtly", "Weekly", "Daily", "Sub-daily"),
+  Function = c("start:end", "yearquarter", "yearmonth", "yearweek", "as_date() / ymd()", "as_datetime() / ymd_hms()")
+)
+
+time_func
+```
+
+### Multiple time-series into a single object
+
+```{r}
+olympic_running
+```
+We can acess the categories of each variables
+
+```{r}
+olympic_running %>% distinct(Sex)
+```
+
+### `dplyr` functions with tsibble
+
+```{r}
+PBS
+```
+In the above tsibble we have 67596 observations of 336 time-series together
+
+This contains monthly data on Medicare Australia prescription data from July 1991 to June 2008. These are classified according to various concession types, and Anatomical Therapeutic Chemical (ATC) indexes. For this example, we are interested in the Cost time series (total cost of scripts in Australian dollars).
+
+Filtering data, in which the ATC2 = A10
+
+```{r}
+PBS %>% 
+  filter(ATC2 == "A10")
+```
+
+```{r}
+PBS %>% 
+  filter(ATC2 == "A10") %>% #filter by rows
+  select(Month, Concession, Type, Cost) # select particular columns
+```
+We can compute the total cost oer month
+
+```{r}
+PBS %>% 
+  filter(ATC2 == "A10") %>% 
+  select(Month, Concession, Type, Cost) %>% 
+  summarise(TotalC = sum(Cost))
+```
+### Creating new variables using mutate
+
+Let's create a Cost column in Millions
+
+```{r}
+PBS %>% 
+  filter(ATC2 == "A10") %>% 
+  select(Month, Concession, Type, Cost) %>% 
+  summarise(TotalC = sum(Cost)) %>% 
+  mutate(Cost = round(TotalC/1e6,2))
+```
+We can save this result for later examples
+
+```{r}
+PBS %>% 
+  filter(ATC2 == "A10") %>% 
+  select(Month, Concession, Type, Cost) %>% 
+  summarise(TotalC = sum(Cost)) %>% 
+  mutate(Cost = round(TotalC/1e6,2)) -> a10
+
+## the -> is a right assigment
+```
+
+## Read a csv an convert to a tsibble
+
+The Index: the column that indexes the values (usually a time - series column)
+The keys: the columns that uniquely identify a time-series
+
+The other columns are called `values`
+
+```{r}
+prison <- readr::read_csv("https://OTexts.com/fpp3/extrafiles/prison_population.csv")
+
+head(prison)
+
+#convert time to quarter
+prison <- prison %>% 
+  mutate(Quarter = yearquarter(Date)) %>%  
+  select(-Date) %>% ## - stands for remove Date, select all unless Date
+  as_tsibble(key = c(State, Gender, Legal, Indigenous),
+             index = Quarter)
+
+prison
+```
+A tsibble requires an unique index to be valid
